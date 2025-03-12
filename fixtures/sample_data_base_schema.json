@@ -1,0 +1,79 @@
+[
+    {
+      "model": "User",
+      "fields": {
+        "name": "Alice Manager",
+        "role": "General Manager",
+        "password": "admin123"
+      }
+    },
+    {
+      "model": "User",
+      "fields": {
+        "name": "Dr. John Doe",
+        "role": "Doctor",
+        "password": "doctor123"
+      }
+    },
+    {
+      "model": "User",
+      "fields": {
+        "name": "Jane Assistant",
+        "role": "Assistant",
+        "password": "assistant123"
+      }
+    },
+    {
+      "model": "Patient",
+      "fields": {
+        "name": "Patient One"
+      }
+    },
+    {
+      "model": "Patient",
+      "fields": {
+        "name": "Patient Two"
+      }
+    },
+    {
+      "model": "Treatment",
+      "fields": {
+        "name": "Physical Therapy",
+        "description": "Rehabilitation exercises"
+      }
+    },
+    {
+      "model": "Treatment",
+      "fields": {
+        "name": "Medication",
+        "description": "Pain relievers"
+      }
+    },
+    {
+      "model": "PatientTreatment",
+      "fields": {
+        "patient_id": 1,
+        "treatment_id": 1,
+        "prescribed_by": 2,
+        "status": "prescribed"
+      }
+    },
+    {
+      "model": "PatientTreatment",
+      "fields": {
+        "patient_id": 2,
+        "treatment_id": 2,
+        "prescribed_by": 2,
+        "status": "prescribed"
+      }
+    },
+    {
+      "model": "PatientAssistant",
+      "fields": {
+        "patient_id": 1,
+        "assistant_id": 3,
+        "doctor_id": 2
+      }
+    }
+  ]
+  
