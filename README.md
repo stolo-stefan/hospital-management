@@ -71,42 +71,24 @@ To run tests, use:
 cd app
 pytest
 ```
-or in the root folder:
+Or in the root folder:
 ```sh
 pytest --cov=app
 ```
 ---
 
-### 7. Docker
+## Docker Setup
 
-#### Update `.env` File
+### Update `.env` File
 Modify the `.env` file to match the database values from `docker-compose.yml`:
 
-##### Example:
+#### Example:
 ```env
 DATABASE_URI = mysql+pymysql://myuser:mypassword@mysql_db:3306/hospital_db
 TEST_DATABASE_URI = mysql+pymysql://myuser:mypassword@mysql_db:3306/test_database
 ```
 
-### 8. AWS Deployment
-
-The server has been deployed on AWS as an EC2 instance tied with an Aurora and RDS Database.
-Address: http://13.60.210.135:5000
-
-### 9. OpenAPI Documentation
-
-#### Local Host:
-
-While the server is running you can access the OpenAPI Documentation following the address:
-http://127.0.0.1:5000/api/docs/
-
-#### AWS Host:
-
-While the server is running you can access the OpenAPI Documentation following the address:
-http://13.60.210.135:5000/api/docs/
-
-
-#### Run Docker
+### Run Docker
 1. Navigate to the root folder:
    ```sh
    cd /path/to/project
@@ -116,22 +98,42 @@ http://13.60.210.135:5000/api/docs/
    docker-compose up --build
    ```
 
-#### Create Databases
+### Create Databases
 Once the MySQL container is running, create the required databases inside the MySQL image:
 - `hospital_db`
 - `test_database`
 
-#### Test Docker
-To allow external connections, modify the following line in the run.py of the Flask application:
-  ```sh
+### Test Docker
+To allow external connections, modify the following line in `run.py` of the Flask application:
+  ```python
    app.run(debug=False)
-   ```
-  to
-  ```sh
+  ```
+Change it to:
+  ```python
    app.run(host="0.0.0.0", port=5000)
-   ```
+  ```
 This ensures Flask is accessible from outside the container.
-Can be tested with tools such as PostMan.
+You can test it using tools such as **Postman**.
+
+---
+
+## AWS Deployment
+The server has been deployed on **AWS** as an **EC2 instance** tied with an **Aurora and RDS Database**.
+
+**Live Address:** [http://13.60.210.135:5000](http://13.60.210.135:5000)
+
+---
+
+## OpenAPI Documentation
+
+### Local Host:
+While the server is running, access the OpenAPI Documentation at:
+[http://127.0.0.1:5000/api/docs/](http://127.0.0.1:5000/api/docs/)
+
+### AWS Host:
+While the server is running, access the OpenAPI Documentation at:
+[http://13.60.210.135:5000/api/docs/](http://13.60.210.135:5000/api/docs/)
+
 ## API Endpoints
 
 ### 1. Authentication Endpoints
