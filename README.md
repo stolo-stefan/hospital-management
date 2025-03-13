@@ -77,6 +77,43 @@ pytest --cov=app
 ```
 ---
 
+### 7. Docker
+
+#### Update `.env` File
+Modify the `.env` file to match the database values from `docker-compose.yml`:
+
+##### Example:
+```env
+DATABASE_URI = mysql+pymysql://myuser:mypassword@mysql_db:3306/hospital_db
+TEST_DATABASE_URI = mysql+pymysql://myuser:mypassword@mysql_db:3306/test_database
+```
+
+#### Run Docker
+1. Navigate to the root folder:
+   ```sh
+   cd /path/to/project
+   ```
+2. Build and start the Docker containers:
+   ```sh
+   docker-compose up --build
+   ```
+
+#### Create Databases
+Once the MySQL container is running, create the required databases inside the MySQL image:
+- `hospital_db`
+- `test_database`
+
+#### Test Docker
+To allow external connections, modify the following line in the run.py of the Flask application:
+  ```sh
+   app.run(debug=False)
+   ```
+  to
+  ```sh
+   app.run(host="0.0.0.0", port=5000)
+   ```
+This ensures Flask is accessible from outside the container.
+Can be tested with tools such as PostMan.
 ## API Endpoints
 
 ### 1. Authentication Endpoints
