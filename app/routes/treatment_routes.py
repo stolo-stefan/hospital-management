@@ -1,7 +1,7 @@
 import datetime
 from flask import Blueprint, request, jsonify
 from app import db
-from app.models import Treatment, Patient, PatientTreatment, PatientAssistant
+from app.models import Treatment, Patient, PatientTreatment, PatientAssistant, TreatmentLog
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.utils import get_current_user, check_json, check_role, get_treatment_by_id, get_patient_by_id
 
@@ -202,6 +202,10 @@ def apply_treatment(patient_id, treatment_id):
     patient_treatment.applied_at = datetime.datetime.now()
     patient_treatment.status = 'applied'
 
+    db.session.commit()
+
+    new_log = TreatmentLog(patient_id = patient_id, treatment_id = treatment_id, applied_by = assistant_id, applied_at = datetime.datetime.now())
+    db.session.add(new_log)
     db.session.commit()
 
     return jsonify({

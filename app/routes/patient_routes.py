@@ -136,6 +136,8 @@ def assign_patient_to_assistant(patient_id):
         return jsonify({'error': 'Unauthorized'}), 401
 
     patient = get_patient_by_id(patient_id)
+    if patient is None:
+        return jsonify({'error': 'Patient not found'}), 404
     if isinstance(patient, dict):
         return patient
 

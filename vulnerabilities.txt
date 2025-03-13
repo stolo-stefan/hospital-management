@@ -1,0 +1,80 @@
+VULNERABILITY ASSESMENT:
+
+1. Authentication Routes (auth_routes.py):
+* Potential Security Issues:
+    - Brute Force Attacks: The login route lacks rate limiting, allowing attackers to try multiple username/password combinations.
+    - JWT Token Security Risks: Tokens are returned in plain JSON responses without HTTP-only or secure cookie flags.
+    - User Enumeration: Error messages indicate whether a username exists, making it easier for attackers to determine valid accounts.
+* How They Can Be Exploited:
+    - Attackers can automate login attempts to gain unauthorized access.
+    - Exposed JWTs can be stolen and reused for impersonation.
+    - Malicious users can enumerate valid usernames, leading to targeted attacks.
+* Impact on the System:
+    - Account Takeover: Attackers can brute force their way into user accounts.
+    - Session Hijacking: If JWTs are exposed, an attacker can impersonate a user.
+    - User Information Leakage: Knowing valid usernames can help attackers craft social engineering attacks.
+* Mitigation Strategies:
+    - Implement Rate Limiting: Restrict failed login attempts per user or IP.
+    - Use Secure JWT Storage: Store tokens as HTTP-only cookies to prevent client-side exposure.
+    - Standardized Error Messages: Use generic authentication failure messages (e.g., "Invalid credentials") to prevent enumeration.
+* Testing and Prevention Methods:
+    - Automated Penetration Testing: Use tools like Burp Suite or OWASP ZAP to test for brute force vulnerabilities.
+    - JWT Analysis: Check token storage security using browser developer tools.
+
+2. Patient Routes (patient_routes.py):
+* Potential Security Issues:
+    - Lack of Validation on Input Data: No strict validation on user inputs such as names.
+    - Sensitive Data Exposure: Patient details are accessible without encryption or masking.
+* How They Can Be Exploited:
+    - Malicious input could cause unexpected behavior in queries.
+* Impact on the System:
+    - Data Integrity Issues: Malicious users could alter patient data, affecting treatment records.
+* Mitigation Strategies:
+    - Sanitize and Validate Inputs: Use data validation libraries to prevent injection attacks.
+    - Implement Encryption for Sensitive Data: Store patient information securely in the database.
+* Testing and Prevention Methods:
+    - SQL Injection Tests: Use tools like SQLMap to check for injection vulnerabilities.
+
+3. Doctor Routes (doctor_routes.py):
+* Potential Security Issues:
+    - Sensitive Data Exposure: Doctors can access patient lists without encryption.
+* Impact on the System:
+    - Data Breach Risks: Patient records could be accessed without encryption.
+* Mitigation Strategies:
+    - Encrypt Sensitive Data in Transit and Storage: Protect patient information from unauthorized access.
+* Testing and Prevention Methods:
+    - Data Encryption Audits: Check if sensitive data is encrypted.
+
+6. Report Routes (report_routes.py):
+* Potential Security Issues:
+    - Exposure of Aggregated Sensitive Data: Reports contain high-level treatment and patient statistics.
+    - SQL Injection Risks: Improper handling of report filters could lead to injection attacks.
+* How They Can Be Exploited:
+    - Malicious queries could manipulate report data.
+* Impact on the System:
+    - Data Tampering Risks: Reports could be manipulated through SQL injection.
+* Mitigation Strategies:
+    - Use Parameterized Queries: Prevent SQL injection in report filters.
+* Testing and Prevention Methods:
+    - SQL Injection Testing: Use automated tools to test for injection vulnerabilities.
+
+7. Utility Functions (utils.py):
+* Potential Security Issues:
+    - Lack of Proper Input Validation: check_json function does not strictly validate input data.
+    - Potential Role Bypass: check_role does not enforce case sensitivity, which could allow unauthorized access.
+    - Weak Password Storage: The generate_password_hash function is used, but without explicit salting.
+* How They Can Be Exploited:
+    - Attackers could pass malformed JSON to crash API endpoints.
+    - Case-insensitive role checking could allow privilege escalation.
+    - Weak hashing techniques could expose passwords in case of a database breach.
+* Impact on the System:
+    - Service Disruptions: APIs could crash due to unvalidated inputs.
+    - Privilege Escalation Risks: Attackers could bypass role restrictions.
+    - Credential Exposure: If an attacker gains access to hashed passwords, they could crack them.
+* Mitigation Strategies:
+    - Strict Input Validation: Implement JSON schema validation.
+    - Ensure Case-Sensitive Role Enforcement: Normalize role checks to avoid bypassing restrictions.
+    - Use Stronger Hashing Algorithms: Use bcrypt or Argon2 for password hashing.
+* Testing and Prevention Methods:
+    - Fuzz Testing: Inject malformed JSON to test validation.
+    - Password Strength Audits: Analyze password hashing techniques.
