@@ -68,9 +68,13 @@ python run.py
 
 To run tests, use:
 ```sh
+cd app
 pytest
 ```
-
+or in the root folder:
+```sh
+pytest --cov=app
+```
 ---
 
 ## API Endpoints
