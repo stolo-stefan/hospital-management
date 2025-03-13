@@ -1,0 +1,1294 @@
+openapi: 3.0.0
+info:
+  title: Hospital Management API
+  description: API for managing authentication and authorization for hospital management.
+  version: 1.0.0
+
+servers:
+  - url: http://127.0.0.1:5000
+    description: Local Host
+  - url: http://13.60.210.135:5000
+    description: AWS Deployed Server
+
+paths:
+  /api/auth/login:
+    post:
+      summary: Authenticate user and return JWT token
+      description: Authenticates a user using their credentials and returns an access token.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                password:
+                  type: string
+            examples:
+              GeneralManager:
+                summary: Login as a General Manager
+                value:
+                  name: "Alice Manager"
+                  password: "admin123"
+              Doctor:
+                summary: Login as a Doctor
+                value:
+                  name: "Dr. John Doe"
+                  password: "doctor123"
+              Assistant:
+                summary: Login as an Assistant
+                value:
+                  name: "Jane Assistant"
+                  password: "assistant123"
+      responses:
+        "200":
+          description: Successfully authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Login successful"
+                  access_token:
+                    type: string
+                    example: "eyJhb..."
+        "400":
+          description: Missing credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing name or password"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid password"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User with this name was not found"
+
+  /api/auth/register:
+    post:
+      summary: Register a new user
+      description: Allows a **General Manager** to create a new user (Doctor, Assistant, or another General Manager).
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Alice Manager"
+                password:
+                  type: string
+                  example: "admin123"
+                role:
+                  type: string
+                  enum: ["General Manager", "Doctor", "Assistant"]
+                  example: "Doctor"
+      responses:
+        "201":
+          description: User successfully registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User Alice Manager - Role General Manager registered"
+        "400":
+          description: Missing required fields or user already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User with this name already exists"
+        "401":
+          description: Unauthorized (only General Managers can register users)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+  /api/managers:
+    get:
+      summary: Retrieve all General Managers
+      description: Fetches a list of all users with the role "General Manager". Only accessible by General Managers.
+      tags:
+        - Manager
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of General Managers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  managers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        name:
+                          type: string
+                          example: "Alice Manager"
+        "204":
+          description: No managers found
+        "401":
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+
+  /api/managers/{manager_id}:
+    put:
+      summary: Update a General Manager's details
+      description: Allows a General Manager to update another manager's details. At least one of 'name', 'password', or 'role' must be provided.
+      tags:
+        - Manager
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: manager_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the manager to be updated.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Updated Manager Name"
+                password:
+                  type: string
+                  example: "newpassword123"
+                role:
+                  type: string
+                  enum: ["General Manager"]
+                  example: "General Manager"
+      responses:
+        "200":
+          description: Manager successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Manager updated"
+        "400":
+          description: No valid fields provided for update
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "At least one field (name, password, role) is required"
+        "404":
+          description: Manager not found or invalid role
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Manager not found or invalid role"
+        "401":
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+
+    delete:
+      summary: Delete a General Manager
+      description: Removes a General Manager from the system. Only General Managers can perform this action.
+      tags:
+        - Manager
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: manager_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the manager to be deleted.
+      responses:
+        "200":
+          description: Manager successfully deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User Alice Manager deleted successfully"
+        "404":
+          description: Manager not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User not found"
+        "401":
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+  /api/doctors:
+    get:
+      summary: Retrieve all Doctors
+      description: Fetches a list of all users with the role "Doctor". Only accessible by General Managers.
+      tags:
+        - Doctor
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of Doctors
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  doctors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 2
+                        name:
+                          type: string
+                          example: "Dr. John Doe"
+        "204":
+          description: No doctors found
+        "401":
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+
+  /api/doctors/{doctor_id}:
+    put:
+      summary: Update a Doctor's details
+      description: Allows a General Manager to update a Doctor's details. At least one of 'name', 'password', or 'role' must be provided.
+      tags:
+        - Doctor
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: doctor_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the doctor to be updated.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Updated Doctor Name"
+                password:
+                  type: string
+                  example: "newpassword123"
+                role:
+                  type: string
+                  enum: ["Doctor"]
+                  example: "Doctor"
+      responses:
+        "200":
+          description: Doctor successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Doctor updated"
+        "400":
+          description: No valid fields provided for update
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "At least one field (name, password, role) is required"
+        "404":
+          description: Doctor not found or invalid role
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Doctor not found or invalid role"
+        "401":
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+
+    delete:
+      summary: Delete a Doctor
+      description: Removes a Doctor from the system. Only General Managers can perform this action.
+      tags:
+        - Doctor
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: doctor_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the doctor to be deleted.
+      responses:
+        "200":
+          description: Doctor successfully deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Doctor deleted successfully"
+        "404":
+          description: Doctor not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Doctor not found"
+        "401":
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+  /api/assistants:
+    get:
+      summary: Retrieve all Assistants
+      description: Fetches a list of all users with the role "Assistant". Only accessible by General Managers.
+      tags:
+        - Assistant
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of Assistants
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  assistants:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 3
+                        name:
+                          type: string
+                          example: "Jane Assistant"
+        "204":
+          description: No assistants found
+        "401":
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+  /api/assistants/{assistant_id}:
+    put:
+      summary: Update an Assistant's details
+      description: Allows a General Manager to update an Assistant's details. At least one of 'name', 'password', or 'role' must be provided.
+      tags:
+        - Assistant
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: assistant_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the assistant to be updated.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Updated Assistant Name"
+                password:
+                  type: string
+                  example: "newpassword123"
+                role:
+                  type: string
+                  enum: ["Assistant"]
+                  example: "Assistant"
+      responses:
+        "200":
+          description: Assistant successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Assistant updated"
+        "400":
+          description: No valid fields provided for update
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "At least one field (name, password, role) is required"
+        "404":
+          description: Assistant not found or invalid role
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Assistant not found or invalid role"
+        "401":
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+
+    delete:
+      summary: Delete an Assistant
+      description: Removes an Assistant from the system. Only General Managers can perform this action.
+      tags:
+        - Assistant
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: assistant_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: The ID of the assistant to be deleted.
+      responses:
+        "200":
+          description: Assistant successfully deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Assistant deleted successfully"
+        "404":
+          description: Assistant not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User not found"
+        "401":
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+  /api/patients/register:
+    post:
+      summary: Register a new patient
+      description: Allows a **General Manager** or **Doctor** to create a new patient.
+      tags:
+        - Patient
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Patient One"
+      responses:
+        "201":
+          description: Patient successfully registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Patient created successfully"
+        "400":
+          description: Patient name already exists or missing field
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Patient with this name already exists"
+        "401":
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized"
+
+  /api/patients:
+    get:
+      summary: Retrieve all patients
+      description: Fetches a list of all registered patients. Accessible only by authorized users.
+      tags:
+        - Patient
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of Patients
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  patients:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        name:
+                          type: string
+                          example: "Patient One"
+        "204":
+          description: No patients found
+
+  /api/patients/{patient_id}:
+    get:
+      summary: Retrieve a specific patient by ID
+      description: Fetches patient details. Accessible only by authorized users.
+      tags:
+        - Patient
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: patient_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Patient details retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: "Patient One"
+        "404":
+          description: Patient not found
+
+    put:
+      summary: Update a patient's details
+      description: Allows a **General Manager** or **Doctor** to update a patient's information.
+      tags:
+        - Patient
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: patient_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Updated Patient Name"
+      responses:
+        "200":
+          description: Patient successfully updated
+        "400":
+          description: Patient name already exists
+        "404":
+          description: Patient not found
+        "401":
+          description: Unauthorized access
+
+    delete:
+      summary: Delete a patient
+      description: Removes a patient record. Only **General Managers** or **Doctors** can perform this action.
+      tags:
+        - Patient
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: patient_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Patient successfully deleted
+        "404":
+          description: Patient not found
+        "401":
+          description: Unauthorized access
+
+  /api/patients/{patient_id}/assign:
+    post:
+      summary: Assign a patient to an assistant
+      description: Assigns a patient to an assistant. **Doctors** can only assign their own patients. **General Managers** must specify a doctor.
+      tags:
+        - Patient
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: patient_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                doctor_id:
+                  type: integer
+                  example: 2
+                  description: "Required only if assigned by a General Manager"
+                assistant_id:
+                  type: integer
+                  example: 3
+      responses:
+        "201":
+          description: Assignment successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Patient 1 assigned to Assistant 3 under Doctor 2"
+        "400":
+          description: Invalid request
+        "404":
+          description: Patient or Assistant not found
+        "401":
+          description: Unauthorized access
+        "409":
+          description: Patient already belongs to another doctor
+
+  /api/patients/doctor/patients:
+    get:
+      summary: Retrieve patients assigned to a specific doctor
+      description: Fetches a list of patients assigned to a doctor. **Doctors** can only access their own patients. **General Managers** can specify a doctor.
+      tags:
+        - Patient
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                doctor_id:
+                  type: integer
+                  example: 2
+                  description: "Required only if accessed by a General Manager"
+      responses:
+        "200":
+          description: List of assigned patients
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  doctor_id:
+                    type: integer
+                    example: 2
+                  patients:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        name:
+                          type: string
+                          example: "Patient One"
+        "404":
+          description: Doctor not found or invalid role
+        "401":
+          description: Unauthorized access
+        "409":
+          description: No patients found for this doctor
+  /api/treatments/register:
+    post:
+      summary: Register a new treatment
+      description: Allows a **General Manager** or **Doctor** to create a new treatment.
+      tags:
+        - Treatment
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Physical Therapy"
+                description:
+                  type: string
+                  example: "Rehabilitation exercises"
+      responses:
+        "201":
+          description: Treatment successfully registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Treatment created successfully"
+        "400":
+          description: Treatment name already exists or missing field
+        "401":
+          description: Unauthorized access
+
+  /api/treatments:
+    get:
+      summary: Retrieve all treatments
+      description: Fetches a list of all registered treatments. Accessible only by authorized users.
+      tags:
+        - Treatment
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: List of Treatments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  treatments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        name:
+                          type: string
+                          example: "Physical Therapy"
+                        description:
+                          type: string
+                          example: "Rehabilitation exercises"
+        "204":
+          description: No treatments found
+
+  /api/treatments/{treatment_id}:
+    get:
+      summary: Retrieve a specific treatment by ID
+      description: Fetches treatment details. Accessible only by authorized users.
+      tags:
+        - Treatment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: treatment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Treatment details retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: "Physical Therapy"
+                  description:
+                    type: string
+                    example: "Rehabilitation exercises"
+        "404":
+          description: Treatment not found
+
+    put:
+      summary: Update a treatment's details
+      description: Allows a **General Manager** or **Doctor** to update a treatment's information.
+      tags:
+        - Treatment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: treatment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Updated Treatment Name"
+                description:
+                  type: string
+                  example: "Updated description"
+      responses:
+        "200":
+          description: Treatment successfully updated
+        "400":
+          description: Treatment name already exists
+        "404":
+          description: Treatment not found
+        "401":
+          description: Unauthorized access
+
+    delete:
+      summary: Delete a treatment
+      description: Removes a treatment record. Only **General Managers** or **Doctors** can perform this action.
+      tags:
+        - Treatment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: treatment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Treatment successfully deleted
+        "404":
+          description: Treatment not found
+        "401":
+          description: Unauthorized access
+
+  /api/treatments/{treatment_id}/prescribe/{patient_id}:
+    post:
+      summary: Prescribe a treatment to a patient
+      description: Allows a **Doctor** to prescribe a treatment to a patient they supervise.
+      tags:
+        - Treatment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: treatment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: patient_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "201":
+          description: Treatment successfully prescribed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Treatment 1 prescribed to Patient 2 by Doctor 3"
+                  status:
+                    type: string
+                    example: "prescribed"
+        "400":
+          description: Treatment already prescribed
+        "404":
+          description: Patient or Treatment not found
+        "403":
+          description: Doctor does not supervise the patient
+
+  /api/treatments/{treatment_id}/apply/{patient_id}:
+    post:
+      summary: Apply a treatment to a patient
+      description: Allows an **Assistant** to apply a prescribed treatment to a patient they are assigned to.
+      tags:
+        - Treatment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: treatment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: patient_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Treatment successfully applied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Treatment 1 successfully applied to Patient 2 by Assistant 4"
+                  status:
+                    type: string
+                    example: "applied"
+                  applied_at:
+                    type: string
+                    format: date-time
+                    example: "2025-06-12T15:30:00"
+        "400":
+          description: Treatment already applied
+        "404":
+          description: Patient or Treatment not found
+        "403":
+          description: Assistant not assigned to the patient
+  /api/reports/doctors-patients:
+    get:
+      summary: Generate Doctor-Patient Report
+      description: |
+        Retrieves a report listing all doctors and their associated patients, 
+        along with statistical insights such as:
+          - Total number of doctors
+          - Total number of patients
+          - Average patients per doctor
+          - Top 3 most used treatments
+          - Top 3 most assigned assistants
+          - Average time taken to apply treatments
+        Accessible only by **General Managers**.
+      tags:
+        - Reports
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Successfully generated doctor-patient report.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  report:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        doctor_id:
+                          type: integer
+                          example: 2
+                        doctor_name:
+                          type: string
+                          example: "Dr. John Doe"
+                        patients:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                                example: 5
+                              name:
+                                type: string
+                                example: "Patient One"
+                  statistics:
+                    type: object
+                    properties:
+                      total_doctors:
+                        type: integer
+                        example: 10
+                      total_patients:
+                        type: integer
+                        example: 150
+                      avg_patients_per_doctor:
+                        type: number
+                        example: 15.0
+                      best_used_treatments:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              example: "Physical Therapy"
+                            times_prescribed:
+                              type: integer
+                              example: 50
+                      most_assigned_assistants:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              example: "Jane Assistant"
+                            patients_assigned:
+                              type: integer
+                              example: 30
+                      average_time_to_apply_treatment_hours:
+                        type: number
+                        example: 12.5
+        "401":
+          description: Unauthorized - Only General Managers can access this report.
+        "404":
+          description: No doctors found.
+
+  /api/reports/patient-treatments/{patient_id}:
+    get:
+      summary: Get Treatments Applied to a Patient
+      description: |
+        Retrieves all treatments prescribed and applied to a specific patient.
+        Accessible by:
+          - **General Managers** (for all patients)
+          - **Doctors** (only if they supervise the patient)
+        Includes:
+          - Treatment details (name, description)
+          - Prescribing doctor ID
+          - Applying assistant ID
+          - Application date
+          - Treatment status (prescribed/applied)
+      tags:
+        - Reports
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: patient_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Successfully retrieved patient treatments.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  patient_id:
+                    type: integer
+                    example: 3
+                  patient_name:
+                    type: string
+                    example: "Patient Three"
+                  treatments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        name:
+                          type: string
+                          example: "Physical Therapy"
+                        description:
+                          type: string
+                          example: "Rehabilitation exercises"
+                        prescribed_by:
+                          type: integer
+                          example: 2
+                        applied_by:
+                          type: integer
+                          example: 3
+                        applied_at:
+                          type: string
+                          format: date-time
+                          example: "2025-06-12T15:30:00"
+                        status:
+                          type: string
+                          enum: [prescribed, applied]
+                          example: "applied"
+        "401":
+          description: Unauthorized - Only General Managers or supervising Doctors can access this report.
+        "403":
+          description: Forbidden - Doctor does not supervise this patient.
+        "404":
+          description: Patient not found.
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

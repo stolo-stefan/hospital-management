@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
+from flask_swagger_ui import get_swaggerui_blueprint
 from dotenv import load_dotenv
 from config import config
 import os
@@ -32,6 +33,11 @@ def create_app():
     from app.routes.patient_routes import patients_bp
     from app.routes.treatment_routes import treatments_bp
 
+    SWAGGER_URL = "/api/docs"
+    API_URL = "/static/swagger.yaml"
+
+    swagger_ui_blueprint = get_swaggerui_blueprint(SWAGGER_URL, API_URL)
+    app.register_blueprint(swagger_ui_blueprint, url_prefix=SWAGGER_URL)
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(manager_bp, url_prefix='/api/managers')
     app.register_blueprint(doctor_bp, url_prefix='/api/doctors')

@@ -88,6 +88,24 @@ DATABASE_URI = mysql+pymysql://myuser:mypassword@mysql_db:3306/hospital_db
 TEST_DATABASE_URI = mysql+pymysql://myuser:mypassword@mysql_db:3306/test_database
 ```
 
+### 8. AWS Deployment
+
+The server has been deployed on AWS as an EC2 instance tied with an Aurora and RDS Database.
+Address: http://13.60.210.135:5000
+
+### 9. OpenAPI Documentation
+
+#### Local Host:
+
+While the server is running you can access the OpenAPI Documentation following the address:
+http://127.0.0.1:5000/api/docs/
+
+#### AWS Host:
+
+While the server is running you can access the OpenAPI Documentation following the address:
+http://13.60.210.135:5000/api/docs/
+
+
 #### Run Docker
 1. Navigate to the root folder:
    ```sh
