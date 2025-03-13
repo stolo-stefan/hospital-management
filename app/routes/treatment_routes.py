@@ -107,15 +107,6 @@ def delete_treatment(treatment_id):
 @treatments_bp.route('/<int:treatment_id>/prescribe/<int:patient_id>', methods=['POST'])
 @jwt_required()
 def prescribe_treatment_to_patient(treatment_id, patient_id):
-    """
-    [POST] Assigns an existing Treatment to a Patient. The doctor must already
-    supervise this patient (i.e., patient_assistants table must link them).
-    Only that supervising Doctor can prescribe.
-    Body (optional):
-      - 'status' -> 'prescribed' (default) or 'applied' (not typical here)
-    Returns JSON with success message or error.
-    """
-
     current_user = get_current_user()
     if current_user['role'] != 'Doctor':
         return jsonify({'error': 'Only a Doctor can prescribe treatments'}), 401
@@ -159,15 +150,6 @@ def prescribe_treatment_to_patient(treatment_id, patient_id):
 @treatments_bp.route('/<int:treatment_id>/apply/<int:patient_id>', methods=['POST'])
 @jwt_required()
 def apply_treatment(patient_id, treatment_id):
-    """
-    [POST] Marks a prescribed treatment as applied by an Assistant.
-    - The Assistant must be assigned to the Patient.
-    - The Treatment must be in "prescribed" status before it can be applied.
-    - Assistant ID is taken from the JWT.
-    - Patient ID and Treatment ID are in the URL.
-    Returns JSON with success message or error.
-    """
-
     current_user = get_current_user()
     if current_user['role'] != 'Assistant':
         return jsonify({'error': 'Only an Assistant can apply treatments'}), 403

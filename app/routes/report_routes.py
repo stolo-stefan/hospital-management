@@ -11,17 +11,6 @@ report_bp = Blueprint('reports_bp', __name__)
 @report_bp.route('/doctors-patients', methods=['GET'])
 @jwt_required()
 def generate_doctor_patient_report():
-    """
-    [GET] Generates a report containing all Doctors and their associated Patients.
-    Also includes a statistics section.
-    - All Doctors and their associated Patients.
-    - The most frequently prescribed treatments.
-    - The most assigned assistants (top 3).
-    - Average time to apply treatments (in hours).
-    Only the General Manager can access this report.
-    Returns JSON with doctors, patients, and statistical data.
-    """
-    
     current_user = get_current_user()
     if current_user['role'] != 'General Manager':
         return jsonify({'error': 'Unauthorized'}), 401
@@ -95,20 +84,6 @@ def generate_doctor_patient_report():
 @report_bp.route('/patient-treatments/<int:patient_id>', methods=['GET'])
 @jwt_required()
 def get_patient_treatments_report(patient_id):
-    """
-    [GET] Retrieves all treatments applied to a specific patient.
-    Only accessible by:
-    - General Managers
-    - Doctors (only if they supervise the patient).
-    
-    Returns a JSON report with:
-    - Treatment details
-    - Prescribing doctor
-    - Applying assistant
-    - Application date
-    - Status (prescribed/applied)
-    """
-
     current_user = get_current_user()
     if current_user['role'] not in ['General Manager', 'Doctor']:
         return jsonify({'error': 'Unauthorized'}), 401

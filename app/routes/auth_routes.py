@@ -9,13 +9,6 @@ auth_bp = Blueprint('auth_bp', __name__)
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    """
-    [POST] Logs in a user by verifying name and password, returns JWT on success.
-    - Requires a valid username and password.
-    - If credentials are correct, generates and returns an access token.
-    - If credentials are incorrect, returns an error message.
-    Returns a JSON response with the access token upon success.
-    """
     data = check_json()
     if isinstance(data, dict) and 'error' in data:
         return data
@@ -36,14 +29,6 @@ def login():
 @auth_bp.route('/register', methods=['POST'])
 @jwt_required()
 def register():
-    """
-    [POST] Registers a new user (Manager, Doctor, Assistant). Only General Manager can do this.
-    - Requires 'name', 'password', and 'role' fields.
-    - Role must be one of 'General Manager', 'Doctor', or 'Assistant'.
-    - Checks if the user already exists before creating a new one.
-    - Only a General Manager has the privilege to create new users.
-    Returns a JSON response confirming user registration.
-    """
     role_error = check_role(['General Manager'])
     if role_error:
         return role_error

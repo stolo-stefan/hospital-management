@@ -9,12 +9,6 @@ assistant_bp = Blueprint('assistant_bp', __name__)
 @assistant_bp.route('/', methods=['GET'])
 @jwt_required()
 def get_assistants():
-    """
-    [GET] Retrieves all users with role 'Assistant'. Only General Manager can view.
-    - Fetches all users with the role of 'Assistant'.
-    - If no assistants are found, returns an appropriate message.
-    Returns a JSON response with a list of assistants.
-    """
     role_error = check_role(['General Manager'])
     if role_error:
         return role_error
@@ -28,13 +22,6 @@ def get_assistants():
 @assistant_bp.route('/<int:assistant_id>', methods=['PUT'])
 @jwt_required()
 def update_assistant(assistant_id):
-    """
-    [PUT] Updates an existing assistant's data. Only General Manager can do this.
-    - Requires at least one field to be updated ('name', 'password', or 'role').
-    - Checks if the provided assistant ID exists and belongs to the 'Assistant' role.
-    - If valid, updates the assistant's details.
-    Returns a JSON response confirming the update.
-    """
     role_error = check_role(['General Manager'])
     if role_error:
         return role_error
@@ -57,12 +44,6 @@ def update_assistant(assistant_id):
 @assistant_bp.route('/<int:assistant_id>', methods=['DELETE'])
 @jwt_required()
 def delete_assistant(assistant_id):
-    """
-    [DELETE] Deletes an assistant by ID. Only General Manager can do this.
-    - Checks if the provided assistant ID exists.
-    - If valid, removes the assistant from the database.
-    Returns a JSON response confirming the deletion.
-    """
     role_error = check_role(['General Manager'])
     if role_error:
         return role_error

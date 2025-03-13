@@ -9,12 +9,6 @@ doctor_bp = Blueprint('doctor_bp', __name__)
 @doctor_bp.route('/', methods=['GET'])
 @jwt_required()
 def get_doctors():
-    """
-    [GET] Retrieves all users with role 'Doctor'. Only General Manager can view.
-    - Fetches all users assigned the 'Doctor' role.
-    - If no doctors are found, returns an appropriate message.
-    Returns a JSON response with a list of doctors.
-    """
     role_error = check_role(['General Manager'])
     if role_error:
         return role_error
@@ -28,13 +22,6 @@ def get_doctors():
 @doctor_bp.route('/<int:doctor_id>', methods=['PUT'])
 @jwt_required()
 def update_doctor(doctor_id):
-    """
-    [PUT] Updates an existing doctor's data. Only General Manager can do this.
-    - Requires at least one field to be updated ('name', 'password', or 'role').
-    - Checks if the provided doctor ID exists and belongs to the 'Doctor' role.
-    - If valid, updates the doctor's details.
-    Returns a JSON response confirming the update.
-    """
     role_error = check_role(['General Manager'])
     if role_error:
         return role_error
@@ -57,12 +44,6 @@ def update_doctor(doctor_id):
 @doctor_bp.route('/<int:doctor_id>', methods=['DELETE'])
 @jwt_required()
 def delete_doctor(doctor_id):
-    """
-    [DELETE] Deletes a doctor by ID. Only General Manager can do this.
-    - Checks if the provided doctor ID exists.
-    - If valid, removes the doctor from the database.
-    Returns a JSON response confirming the deletion.
-    """
     role_error = check_role(['General Manager'])
     if role_error:
         return role_error

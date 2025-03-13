@@ -9,12 +9,6 @@ manager_bp = Blueprint('manager_bp', __name__)
 @manager_bp.route('/', methods=['GET'])
 @jwt_required()
 def get_managers():
-    """
-    [GET] Retrieves all users with role 'General Manager'. Only General Manager can view.
-    - Fetches all users who hold the 'General Manager' role.
-    - If no managers are found, returns an appropriate message.
-    Returns a JSON response with a list of general managers.
-    """
     role_error = check_role(['General Manager'])
     if role_error:
         return role_error
@@ -28,13 +22,6 @@ def get_managers():
 @manager_bp.route('/<int:manager_id>', methods=['PUT'])
 @jwt_required()
 def update_manager(manager_id):
-    """
-    [PUT] Updates an existing manager's data. Only General Manager can do this.
-    - Requires at least one field to be updated ('name', 'password', or 'role').
-    - Checks if the provided manager ID exists and belongs to the 'General Manager' role.
-    - If valid, updates the manager's details.
-    Returns a JSON response confirming the update.
-    """
     role_error = check_role(['General Manager'])
     if role_error:
         return role_error
@@ -56,12 +43,6 @@ def update_manager(manager_id):
 @manager_bp.route('/<int:manager_id>', methods=['DELETE'])
 @jwt_required()
 def delete_manager(manager_id):
-    """
-    [DELETE] Deletes a manager by ID. Only General Manager can do this.
-    - Checks if the provided manager ID exists.
-    - If valid, removes the manager from the database.
-    Returns a JSON response confirming the deletion.
-    """
     role_error = check_role(['General Manager'])
     if role_error:
         return role_error
