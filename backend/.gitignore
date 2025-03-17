@@ -1,0 +1,21 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+# Virtual environment
+venv/
+.env
+# Testing cache
+.pytest_cache/
+.coverage
+# Docker related
+.vscode/
+docker-compose.override.yml
+# Pip dependency logs
+pip-log.txt
+pip-delete-this-directory.txt
+# Virtualenv
+*.egg-info/
+migrations/
+# Environment variables file
+.env
