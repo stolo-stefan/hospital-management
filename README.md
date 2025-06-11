@@ -126,11 +126,7 @@ The server has been deployed on **AWS** as an **EC2 instance** tied with an **Au
 
 ## OpenAPI Documentation
 
-### Local Host:
-While the server is running, access the OpenAPI Documentation at:
-[http://127.0.0.1:5000/api/docs/](http://127.0.0.1:5000/api/docs/)
-
-### AWS Host:
+### AWS Host (Removed):
 While the server is running, access the OpenAPI Documentation at:
 [http://13.60.210.135:5000/api/docs/](http://13.60.210.135:5000/api/docs/)
 
